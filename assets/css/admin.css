@@ -1,0 +1,119 @@
+/**
+ * DevBrothers No Comments Admin Styles
+ *
+ * @package DevBrothers_No_Comments
+ *
+ * Стили только для специфичных элементов плагина.
+ * Общие стили (кнопки, формы) загружаются из базового плагина devbrothers-admin-panel.
+ */
+
+/* === Список возможностей === */
+
+.dbnc-feature-list {
+    list-style: disc;
+    margin-left: 20px;
+}
+
+/* === Кнопка удаления === */
+
+#dbnc-delete-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    height: auto;
+    padding: 10px 20px;
+}
+
+#dbnc-delete-button .dashicons {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+}
+
+#dbnc-delete-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.dbnc-button-danger {
+    background: #dc3232;
+    border-color: #dc3232;
+    color: #fff;
+}
+
+.dbnc-button-danger:hover,
+.dbnc-button-danger:focus {
+    background: #a00;
+    border-color: #a00;
+    color: #fff;
+}
+
+.dbnc-button-danger:active {
+    background: #900;
+    border-color: #900;
+    color: #fff;
+}
+
+/* === Спиннер === */
+
+@keyframes dbnc-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.dbnc-spinning {
+    animation: dbnc-spin 1s linear infinite;
+    display: inline-block;
+}
+
+/* === Предупреждение === */
+
+.dbnc-warning {
+    color: #dc3232;
+    font-weight: bold;
+}
+
+.dbnc-warning .dashicons {
+    color: #dc3232;
+    margin-right: 5px;
+}
+
+/* === Прогресс удаления === */
+
+.dbnc-progress-wrapper {
+    display: none;
+    margin-top: 15px;
+}
+
+.dbnc-progress-inner {
+    background: #f0f0f1;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+/* === Результат удаления === */
+
+.dbnc-result-wrapper {
+    display: none;
+    margin-top: 15px;
+}
+
+#dbnc-delete-result .notice {
+    padding: 12px;
+    margin: 0;
+    border-radius: 4px;
+}
+
+#dbnc-delete-result .notice p {
+    margin: 0;
+}
+
+/* === Адаптивность === */
+
+@media (max-width: 782px) {
+    #dbnc-delete-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
