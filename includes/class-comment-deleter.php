@@ -23,22 +23,28 @@ class DBNC_Comment_Deleter {
         return (int) $count;
     }
 
+    public function can_delete_comments() {
+        return current_user_can('manage_options') && current_user_can('moderate_comments');
+    }
+
     /**
      * @return array
      */
     public function delete_all_comments() {
         global $wpdb;
 
-        if (!current_user_can('manage_options')) {
+        if (!$this->can_delete_comments()) {
             return [
                 'success' => false,
                 'message' => __('You do not have permission to perform this action.', 'devbrothers-no-comments'),
             ];
         }
 
-        $count_before = $this->get_comments_count();
-
-        if ($count_before === 0) {
+        $high_water = $wpdb->get_var("SELECT MAX(comment_ID) FROM $wpdb->comments");
+        if ($wpdb->last_error !== '') {
+            return ['success' => false, 'message' => __('Could not read comments.', 'devbrothers-no-comments')];
+        }
+        if (!$high_water) {
             return [
                 'success' => true,
                 'message' => __('No comments to delete.', 'devbrothers-no-comments'),
@@ -46,46 +52,57 @@ class DBNC_Comment_Deleter {
             ];
         }
 
-        // Запоминаем посты с комментариями, чтобы точечно сбросить их кеш после удаления.
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-        $affected_post_ids = $wpdb->get_col("SELECT DISTINCT comment_post_ID FROM $wpdb->comments");
+        $deleted = 0;
+        $failed = 0;
+        $cursor = 0;
+        $was_deferred = wp_defer_comment_counting();
+        wp_defer_comment_counting(true);
+        try {
+            do {
+                $ids = $wpdb->get_col($wpdb->prepare(
+                    "SELECT comment_ID FROM $wpdb->comments WHERE comment_ID > %d AND comment_ID <= %d ORDER BY comment_ID LIMIT 100",
+                    $cursor,
+                    $high_water
+                ));
+                if ($wpdb->last_error !== '') {
+                    return [
+                        'success' => false,
+                        'message' => sprintf(__('Could not finish deleting comments. Deleted so far: %d.', 'devbrothers-no-comments'), $deleted),
+                    ];
+                }
+                foreach ($ids as $id) {
+                    $cursor = (int) $id;
+                    if (current_user_can('edit_comment', $cursor) && wp_delete_comment($cursor, true)) {
+                        $deleted++;
+                    } else {
+                        $failed++;
+                    }
+                }
+            } while (count($ids) === 100);
+        } finally {
+            wp_defer_comment_counting($was_deferred);
+        }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-        $wpdb->query("DELETE FROM $wpdb->commentmeta");
-
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-        $wpdb->query("DELETE FROM $wpdb->comments");
-
-        $this->update_post_comment_counts($affected_post_ids);
+        if ($failed > 0) {
+            return [
+                'success' => false,
+                'message' => sprintf(
+                    __('Deleted %1$d comment(s); %2$d could not be deleted.', 'devbrothers-no-comments'),
+                    $deleted,
+                    $failed
+                ),
+            ];
+        }
 
         return [
             'success' => true,
             'message' => sprintf(
                 /* translators: %d: number of deleted comments */
                 __('Successfully deleted %d comment(s).', 'devbrothers-no-comments'),
-                $count_before
+                $deleted
             ),
-            'deleted' => $count_before,
+            'deleted' => $deleted,
         ];
-    }
-
-    /**
-     * @param int[] $affected_post_ids
-     */
-    private function update_post_comment_counts($affected_post_ids = []) {
-        global $wpdb;
-
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-        $wpdb->query("UPDATE $wpdb->posts SET comment_count = 0 WHERE comment_count <> 0");
-
-        // Инвалидируем кеши комментариев и затронутых постов вместо полного wp_cache_flush().
-        if (function_exists('wp_cache_set_comments_last_changed')) {
-            wp_cache_set_comments_last_changed();
-        }
-
-        foreach ((array) $affected_post_ids as $post_id) {
-            clean_post_cache((int) $post_id);
-        }
     }
 
     public function ajax_delete_comments() {
@@ -95,7 +112,7 @@ class DBNC_Comment_Deleter {
             ]);
         }
 
-        if (!current_user_can('manage_options')) {
+        if (!$this->can_delete_comments()) {
             wp_send_json_error([
                 'message' => __('You do not have permission to perform this action.', 'devbrothers-no-comments'),
             ]);

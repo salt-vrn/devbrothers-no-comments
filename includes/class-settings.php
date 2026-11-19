@@ -131,7 +131,9 @@ class DBNC_Settings {
                                 ?>
                             </p>
 
-                            <?php if ($comments_count > 0) : ?>
+                            <?php if (!$this->deleter->can_delete_comments()) : ?>
+                                <p class="description"><?php esc_html_e('Для удаления нужно право модерации комментариев.', 'devbrothers-no-comments'); ?></p>
+                            <?php elseif ($comments_count > 0) : ?>
                                 <button type="button"
                                         id="dbnc-delete-button"
                                         class="button dbnc-button-danger">

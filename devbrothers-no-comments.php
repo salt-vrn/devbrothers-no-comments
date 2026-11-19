@@ -3,7 +3,7 @@
  * Plugin Name: DevBrothers No Comments
  * Plugin URI: https://devbrothers.ru/no-comments/
  * Description: Completely disable comments on your WordPress site. Remove all existing comments with one click.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: DevBrothers
  * Author URI: https://devbrothers.ru
  * License: GPL v2 or later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DBNC_VERSION', '1.0.0');
+define('DBNC_VERSION', '1.0.1');
 define('DBNC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('DBNC_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('DBNC_PLUGIN_BASENAME', plugin_basename(__FILE__));

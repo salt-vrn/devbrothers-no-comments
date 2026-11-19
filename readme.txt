@@ -3,7 +3,7 @@ Contributors: lzolotarev
 Tags: comments, disable, remove, delete, admin
 Requires at least: 5.8
 Tested up to: 7.0
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 Requires PHP: 7.4
 Requires Plugins: devbrothers-admin-panel
 License: GPLv2 or later
@@ -89,6 +89,10 @@ Yes. If you replace the old plugin with DevBrothers No Comments, your saved sett
 
 == Changelog ==
 
+= 1.0.1 =
+* Disable REST access to individual comments when global disabling is enabled.
+* Check moderation permissions and delete comments through WordPress so deletion hooks and caches are handled.
+
 = 1.0.0 =
 * Initial release
 * Global comment disabling
@@ -98,6 +102,9 @@ Yes. If you replace the old plugin with DevBrothers No Comments, your saved sett
 * Automatic migration from legacy DevBrothers Disable Comments settings
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Existing comments are not deleted by updating or disabling comments. The manual bulk delete action requires moderation and permission to edit each comment.
 
 = 1.0.0 =
 Initial release.

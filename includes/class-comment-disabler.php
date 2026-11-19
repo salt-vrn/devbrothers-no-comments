@@ -131,9 +131,7 @@ class DBNC_Comment_Disabler {
      * @return array
      */
     public function disable_rest_comments($endpoints) {
-        if (isset($endpoints['/wp/v2/comments'])) {
-            unset($endpoints['/wp/v2/comments']);
-        }
+        unset($endpoints['/wp/v2/comments'], $endpoints['/wp/v2/comments/(?P<id>[\d]+)']);
         return $endpoints;
     }
 
